@@ -5,7 +5,7 @@ SpicetifyGUI is a graphical user interface for [Spicetify](https://github.com/kh
 
 ## Installation
 
-Download the latest relase from [here](https://github.com/armadio2902/SpicetifyGUI/relases)
+Download the latest relase from [here](https://github.com/armadio2902/SpicetifyGUI/releases)
 
 ## Contributing
 1. Create the executable version of setTheme.py in the "spicetify" folder
