@@ -1,0 +1,227 @@
+@import "colors.css";
+@import "fonts.css";
+
+/* Disable text selection on all items*/
+* {
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+}
+
+body {
+    background-color: rgb(37, 41, 76);
+    display: flex;
+}
+
+ul {
+    display: block;
+    list-style-type: disc;
+    margin-block-start: 0em;
+    margin-block-end: 0em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    padding-inline-start: 0px;
+}
+
+#mainMenu {
+    position: fixed;
+    height: 97%;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    width: 15%;
+    background-color: var(--darkTab);
+}
+
+#mainMenu ul {
+    list-style-type: none;
+}
+
+#mainMenu ul li {
+    margin-top: 4vh;
+    margin-bottom: 4vh;
+    margin-left: 3vw;
+}
+
+#mainMenu ul li a {
+    font-family: "Poppins";
+    font-weight: normal;
+    font-size: 2.8vh;
+    color: var(--white);
+    text-decoration: none;
+}
+
+#themesPageTitle {
+    font-family: Poppins;
+    font-weight: normal;
+    color: var(--white);
+    font-size: 5vh;
+}
+
+#themesSection {
+    position: fixed;
+    display: flex;
+    flex-wrap: wrap;
+    left: 2%;
+    width: 70%;
+}
+
+#themesSection #themes button {
+    cursor: pointer;
+    border-radius: 10px;
+    margin: 1%;
+    width: 15vw;
+    height: 10vh;
+    border: none;
+    outline: none;
+    background-color: var(--button);
+    color: var(--white);
+    font-family: Poppins;
+    font-weight: normal;
+}
+
+#themesSection #themes button:hover {
+    background-color: var(--violet);
+}
+
+#previewTab {
+    border-radius: 8px;
+    height: 97%;
+    display: flex;
+    position: fixed;
+    background-color: var(--darkTab);
+    width: 27vw;
+    margin-left: 71%;
+    flex-direction: column;
+}
+
+#previewTabTitle {
+    color: var(--white);
+    font-family: Poppins;
+    font-weight: normal;
+    font-size: 4vh;
+    margin-left: 1vw;
+}
+
+#themePreviewImage {
+    width: 20vw;
+    height: 22vh;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    margin-left: 3vw;
+}
+
+#themePreviewImage:hover {
+    margin: 0;
+    position: fixed;
+    top: 10%;
+    left: 10%;
+    height: 80%;
+    width: 80%;
+    box-shadow: 1px 1px 400px black;
+}
+
+#hoverToExpandText {
+    margin-left: 4vw;
+    color: var(--white);
+    font-size: 2vh;
+    font-family: Poppins;
+    font-weight: normal;
+}
+
+#setThemeButton {
+    align-self: center;
+    position: absolute;
+    text-align: center;
+    bottom: 2%;
+    cursor: pointer;
+    border-radius: 10px;
+    margin: 1%;
+    width: 20vw;
+    height: 5vh;
+    border: none;
+    outline: none;
+    background-color: var(--green);
+    color: var(--white);
+    font-family: Poppins;
+    font-weight: normal;
+}
+
+#setThemeLabel {
+    transform: translateZ(10px);
+}
+
+#credits {
+    background-color: var(--darkTab);
+    opacity: 90%;
+    border-radius: 8px;
+    color: var(--white);
+    font-size: 2vh;
+    font-family: Poppins;
+    font-weight: normal;
+    display: flex;
+    flex-wrap: wrap;
+    width: 35vw;
+    position: fixed;
+    bottom: 2%;
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    backdrop-filter: blur(1);
+    border: solid 0.1vh var(--button);
+}
+
+#credits p {
+    -webkit-touch-callout:default;
+    -webkit-user-select:text;
+    -moz-user-select:text;
+    -ms-user-select:text;
+    user-select:text;
+    margin: 1vh;
+    transform: translateZ(20px);
+}
+
+#creditsButton {
+    cursor: pointer;
+    position: fixed;
+    bottom: 2%;
+    color: var(--white);
+    background-color: var(--button);
+    border: none;
+    border-radius: 4px;
+    outline: none;
+    height: 4vh;
+    font-size: 2vh;
+    width: 8vw;
+    font-family: 'Poppins';
+}
+
+#creditsButton:hover {
+    background-color: var(--violet);
+}
+
+#closeCredits {
+    cursor: pointer;
+    text-align: center;
+    margin: 1vh;
+    height: 2vw;
+    width: 2vw;
+    outline: none;
+    border: none;
+    border-radius: 4px;
+    color: var(--white);
+    font-family: Poppins;
+    font-weight: bold;
+    font-size: 2vh;
+    background-color: var(--red);
+}
+
+#clickAThemeAlert {
+    color: var(--white);
+    font-family: Poppins;
+    font-weight: normal;
+    margin-left: 2vw;
+}

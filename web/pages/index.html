@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel = "icon" href = "../res/icon.png" type = "image/x-icon">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spicetify GUI</title>
+    <script
+        disable-devtool-auto
+        src='https://cdn.jsdelivr.net/npm/disable-devtool/disable-devtool.min.js'
+        md5='xxx'
+        url='xxx'
+        tk-name='xxx'
+        interval='xxx'
+        disable-menu='xxx'
+    ></script>
+    <script type="text/javascript" src="/eel.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <nav id="mainMenu" style="display: none">
+		<ul>
+			<li><a href="index.html">Themes</a></li>
+            <li><a href="">Settings</a></li>
+		</ul>
+	</nav>
+    <div id="themesSection">
+        <h1 id="themesPageTitle">Themes</h1>
+        <div id="themes">
+        </div>
+        <div id="creditsSection">
+            <button id="creditsButton" onclick="toggleCredits()">Credits</button>
+            <div id="credits" style="visibility: hidden">
+                <button id="closeCredits" onclick="toggleCredits()">X</button>
+                <p>Credits: </p>
+                <p>  https://github.com/morpheusthewhite/spicetify-themes/tree/v2 (themes) </p>
+                <p>  https://github.com/khanhas/spicetify-cli (spicetify-cli) </p> 
+            </div>
+        </div>
+        
+    </div>
+    <div id="previewTab">
+        <h2 id="previewTabTitle">Preview</h2>
+        <div>
+            <img id="themePreviewImage" style="visibility: hidden;">
+            <h3 id="hoverToExpandText" style="visibility: hidden;">Hover to expand</h3>
+        </div>
+        <button id="setThemeButton" style="display: none">Set Theme</button>
+        <h3 id="clickAThemeAlert">Click on a theme to view the preview</h3>
+    </div>
+    <script type="text/javascript" src="../js/vanilla-tilt.js"></script>
+    <script type="text/javascript" src="../js/script.js"></script>
+</body>
+</html>
