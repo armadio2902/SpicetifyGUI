@@ -17,7 +17,8 @@ function setPreview(themeName) {
     var preview = document.getElementById("themePreviewImage")
     eel.getPreviewImg(themeName)(function (image){
         console.log(image)
-        preview.src = "../res/screenshot.png"
+        console.log("Preview changed")
+        preview.src = image
         document.getElementById("clickAThemeAlert").style.display = "none"
         preview.style.visibility = "visible"
         document.getElementById("hoverToExpandText").style.visibility = "visible"
