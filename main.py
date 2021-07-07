@@ -36,18 +36,36 @@ copy_tree(fromDirectory, toDirectory)
 
 themeList = os.listdir(toDirectory)
 
+## Delete old session screenshots
+def deleteScreenshots():
+    dir_name = currentPath + '/web/res/screenshots'
+    if os.path.exists(dir_name) and os.path.isdir(dir_name):
+        if not os.listdir(dir_name):
+            print("Screenshots directory is empty")
+        else:    
+            print("Screenshots directory is not empty, deleting files")
+            shutil.rmtree(dir_name)
+            os.makedirs(dir_name)
+    else:
+        print("Screenshots directory doesn't exist")
+
 @eel.expose
 def getThemes():
     return themeList
 
 @eel.expose
 def getPreviewImg(themeName):
+    deleteScreenshots()
     imagePath = toDirectory + "\\" + themeName + "\\" + "screenshot.png"
-    shutil.copyfile(imagePath, currentPath + "/web/res/screenshot.png")
-    return imagePath
+    shutil.copyfile(imagePath, currentPath + "/web/res/screenshots/screenshot.png")
+    os.rename(currentPath + '/web/res/screenshots/screenshot.png', currentPath + '/web/res/screenshots/screenshot' + themeName + '.png')
+    imageName = '../res/screenshots/screenshot' + themeName + '.png'
+    print("getting theme preview...")
+    return imageName
 
 @eel.expose
 def setTheme(themeName):
+    print("Changing theme to:" + themeName)
     os.system('start /min cmd /c "setTheme.exe "' + themeName + '"')
     
 def noclose(page):
