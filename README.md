@@ -8,4 +8,4 @@ SpicetifyGUI is a graphical user interface for [Spicetify](https://github.com/kh
 
 ## Installation
 
-Download the latest relase from [here](https://github.com/armadio2902/SpicetifyGUI/releases)
+Download the latest release from [here](https://github.com/armadio2902/SpicetifyGUI/releases)
