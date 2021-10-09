@@ -2,7 +2,7 @@
 .main-navBar-navBarLinkActive,
 .main-navBar-navBarLinkActive:focus,
 .logo {
-  background-color: var(--spice-card) !important;
+  background-color: var(--spice-sec-card) !important;
   color: var(--spice-main) !important;
 }
 
@@ -10,7 +10,8 @@
 .main-createPlaylistButton-createPlaylistIcon,
 .main-yourEpisodesButton-yourEpisodesIcon {
   background: var(--spice-text) !important;
-  border-radius: 0px !important;
+  border-radius: unset !important;
+  color: var(--spice-main) !important;
 }
 
 .main-collectionLinkButton-collectionLinkButton {
@@ -18,14 +19,21 @@
 }
 
 .main-collectionLinkButton-collectionLinkButton .main-collectionLinkButton-collectionLinkText,
-.main-createPlaylistButton-button {
+.main-createPlaylistButton-button,
+.main-rootlist-rootlistItemLink,
+.main-rootlist-rootlistItemLink:visited {
   color: var(--spice-text) !important;
 }
 
-.main-collectionLinkButton-collectionLinkButton.main-collectionLinkButton-selected .main-collectionLinkButton-icon {
-  opacity: .7 !important;
+.main-rootlist-rootlistItemLinkActive,
+.main-rootlist-rootlistItemLink:hover,
+.main-rootlist-textWrapper:hover {
+  color: var(--spice-subtext) !important;
 }
 
+.main-collectionLinkButton-collectionLinkButton .main-collectionLinkButton-selected .main-collectionLinkButton-icon {
+  opacity: 0.7 !important;
+}
 
 .main-rootlist-rootlistDividerGradient {
   background: linear-gradient(180deg, var(--spice-main), transparent);
@@ -51,7 +59,9 @@
 .main-entityHeader-overlay,
 .main-entityHeader-backgroundColor,
 .x-914-entityHeader-overlay,
-.x-914-actionBarBackground-background {
+.x-entityHeader-overlay,
+.x-914-actionBarBackground-background,
+.x-actionBarBackground-background {
   background-color: unset !important;
   background-image: unset !important;
 }
@@ -87,7 +97,7 @@
 }
 
 .main-entityHeader-shadow {
-  box-shadow: 0 04px 20px #21212130;
+  box-shadow: 0 0 4px 0 rgba(var(--spice-rgb-shadow), 0.5);
 }
 
 .main-trackList-playingIcon {
@@ -97,7 +107,6 @@
 span.artist-artistVerifiedBadge-badge svg:nth-child(1) {
   fill: black;
 }
-
 
 /* details metadata */
 .main-entityTitle-subtitle.main-entityTitle-gray,
@@ -109,23 +118,25 @@ span.artist-artistVerifiedBadge-badge svg:nth-child(1) {
   color: var(--spice-subtext);
 }
 
-.main-entityTitle-subtitle {
-  color: var(--spice-extratext);
+/* artist page edits*/
+
+.artist-artistOverview-artistOverviewContent {
+  box-shadow: 0 -2px 5px 0 rgba(var(--spice-rgb-shadow), 0.7);
 }
 
-/* artist page edits*/
 .main-entityHeader-background.main-entityHeader-gradient {
-  opacity: .4;
+  opacity: 0.4;
 }
 
 .main-entityHeader-background.main-entityHeader-overlay:after {
-  background-image: linear-gradient(transparent, transparent), linear-gradient(var(--spice-main), var(--spice-main));
+  background-image: linear-gradient(transparent, transparent),
+    linear-gradient(var(--spice-main), var(--spice-main));
 }
 
 .artist-artistPick-pickComment {
-  background: unset !important;
-  border-radius: 0px !important;
-  border-bottom: solid 2px var(--spice-text) !important;
+  background: var(--spice-sec-player) !important;
+  border-radius: 25px !important;
+  border-bottom: solid 2px var(--spice-sec-player) !important;
   color: var(--spice-text) !important;
 }
 
@@ -134,13 +145,13 @@ span.artist-artistVerifiedBadge-badge svg:nth-child(1) {
 }
 
 /* home screen edits */
+
 .view-homeShortcutsGrid-name {
-  color: var(--spice-button);
+  color: var(--spice-text);
 }
 
-
 .main-shelf-title {
-  color: var(--spice-subtext)
+  color: var(--spice-subtext);
 }
 
 .view-homeShortcutsGrid-shortcut,
@@ -164,10 +175,9 @@ span.artist-artistVerifiedBadge-badge svg:nth-child(1) {
   border-radius: 10px;
 }
 
-
 /* inside a page edits */
 .main-addButton-button {
-  color: rgba(var(--spice-rgb-card), .7) !important;
+  color: var(--spice-subtext) !important;
 }
 
 .main-trackList-trackListRow.main-trackList-active .main-trackList-rowMarker,
@@ -178,8 +188,6 @@ span.artist-artistVerifiedBadge-badge svg:nth-child(1) {
 .main-trackList-rowTitle {
   color: var(--spice-text) !important;
 }
-
-
 
 /* friend activity */
 .main-buddyFeed-activityMetadata .main-buddyFeed-artistAndTrackName a,
@@ -196,29 +204,80 @@ span.artist-artistVerifiedBadge-badge svg:nth-child(1) {
   background: var(--spice-extratext);
 }
 
-/* setting menu */
+/* setting page */
+
+.x-settings-container {
+  margin: 16px 180px !important;
+}
+
+.x-settings-title {
+  color: var(--spice-subtext) !important;
+}
+
+.main-dropDown-dropDown {
+  border: 0;
+  border-radius: 10px;
+}
 
 .main-dropDown-dropDown {
   background-color: var(--spice-button-disabled) !important;
   color: var(--spice-text) !important;
 }
 
-.x-settings-title {
-  color: var(--spice-tab-active) !important;
+.x-toggle-indicator {
+  background: var(--spice-button) !important;
+  box-shadow: 0 2px 4px 0 rgba(var(--spice-rgb-shadow), 0.5);
 }
 
 input:checked~.x-toggle-indicatorWrapper .x-toggle-indicator {
-  background-color: var(--spice-button-knob) !important;
-}
-
-.x-toggle-indicator {
-  background: var(--spice-button-knob) !important;
+  background-color: var(--spice-button) !important;
+  box-shadow: 0 2px 4px 0 rgba(var(--spice-rgb-shadow), 0.5);
 }
 
 input:hover:not([disabled]):not(:active)~.x-toggle-indicatorWrapper {
-  background-color: rgba(var(--spice-rgb-button), .5) !important;
+  background-color: rgba(var(--spice-rgb-button-disabled), 0.7) !important;
 }
 
+input:checked~.x-toggle-indicatorWrapper {
+  background-color: rgba(var(--spice-rgb-button), 0.6) !important;
+}
+
+input:checked:hover:not([disabled]):not(:active)~.x-toggle-indicatorWrapper {
+  background-color: rgba(var(--spice-rgb-button), 0.4) !important;
+}
+
+
+/* queue, album, recent, playlist, page edits */
+.queue-queue-container,
+.queue-playHistory-container {
+  margin: 40px 60px !important;
+}
+
+.main-actionBar-ActionBar,
+.x-actionBar-ActionBar {
+  margin: 0 40px !important;
+}
+
+/* podcast edits */
+.x-hTMLDescription-HTMLDescription,
+.x-expandableDescription-paragraph {
+  color: var(--spice-text) !important;
+}
+
+.x-seeMore-button,
+.x-expandableDescription-button {
+  color: var(--spice-button) !important;
+}
+
+.main-type-minuetBold {
+  color: var(--spice-extratext) !important;
+}
+
+.main-entityTitle-subtitle,
+.main-entityTitle-subtitle.main-entityTitle-large,
+.main-entityTitle-subtitle.main-entityTitle-bold {
+  color: var(--spice-subtext) !important;
+}
 
 /* search page edits */
 
@@ -238,7 +297,6 @@ input {
   color: var(--spice-main) !important;
 }
 
-
 /* menu and dropdown menus including the user menu */
 .main-type-mesto,
 .x-533-dropDown-dropDown {
@@ -246,20 +304,9 @@ input {
 }
 
 .main-userWidget-box {
-  background-color: unset !important;
-  border-radius: 0px !important;
-  border-bottom: solid 2px var(--spice-text) !important;
-  color: var(--spice-text) !important;
-}
-
-.main-userWidget-box:focus,
-.main-userWidget-box:hover,
-.main-userWidget-box[data-context-menu-open=true] {
-  border-radius: 10px !important;
-}
-
-.main-avatar-image {
-  padding-bottom: 8% !important;
+  background-color: var(--spice-card) !important;
+  border: unset !important;
+  color: var(--spice-subtext) !important;
 }
 
 /* card edits */
@@ -270,29 +317,38 @@ input {
 }
 
 .main-card-card:hover,
-.main-card-card[data-context-menu-open=true] {
-  background-color: rgba(var(--spice-rgb-sec-card), .3) !important;
+.main-card-card[data-context-menu-open="true"] {
+  background-color: rgba(var(--spice-rgb-sec-card), 0.3) !important;
 }
 
 .main-contextMenu-menu,
 .main-card-card:focus-within,
+.main-deletePlaylistDialog-container,
+.main-aboutRecsModal-container {
+  background-color: var(--spice-card) !important;
+}
 
-.main-deletePlaylistDialog-container {
+.main-deletePlaylistDialog-secondaryButton {
+  color: var(--spice-text) !important;
+}
+
+.main-button-primary {
   background-color: var(--spice-sec-card) !important;
+  color: var(--spice-card) !important;
+}
+
+.main-deletePlaylistDialog-title {
+  color: var(--spice-subtext) !important;
 }
 
 .main-keyboardShortcutsHelpModal-container,
 .main-trackCreditsModal-container {
-  background-color: var(--spice-main) !important;
+  background-color: var(--spice-card) !important;
   color: var(--spice-text) !important;
 }
 
 .main-keyboardShortcutsHelpModal-header,
 .main-trackCreditsModal-header {
-  color: var(--spice-notification) !important;
-}
-
-.main-trackCreditsModal-sectionTitle {
   color: var(--spice-subtext) !important;
 }
 
@@ -302,10 +358,33 @@ input {
 
 /* profile page edits */
 .main-cardImage-imageWrapper {
-  background-color: var(--spice-sec-card) !important;
+  background-color: var(--spice-card) !important;
 }
 
-/* mini player edits */
+/* now playing bar edits */
+
+.Root__now-playing-bar {
+  background-color: var(--spice-sec-player) !important;
+  box-shadow: 0 -2px 5px 0 rgba(var(--spice-rgb-shadow), 0.5) !important;
+  border-radius: 15px 15px 0 0 !important;
+}
+
+.main-nowPlayingBar-container {
+  background-color: var(--spice-sec-player) !important;
+  border-radius: 15px 15px 0 0 !important;
+}
+
+.main-connectBar-connectBar.main-connectBar-FullscreenModeButtonEnabled.main-type-mesto {
+  color: var(--spice-sidebar) !important;
+}
+
+.progress-bar {
+  --progress-bar-height: 5px !important;
+}
+
+.progress-bar__bg {
+  background-color: rgba(var(--spice-rgb-button-disabled), 0.7) !important;
+}
 
 .progress-bar--is-active .progress-bar__fg,
 :not(.no-focus-outline) .progress-bar:focus-within .progress-bar__fg {
@@ -323,47 +402,6 @@ input {
 
 .cover-art,
 .cover-art .cover-art-image {
-  border-radius: 10px;
+  border-radius: 10px !important;
   background-color: var(--spice-sec-player) !important;
 }
-
-.main-nowPlayingBar-container {
-  background-color: var(--spice-sec-player) !important;
-  border-top: unset !important;
-
-  height: 80px;
-}
-
-
-
-/* 
-
-i am unable to remove the small album cover when we expand the 
-album art. So for now i am disabling these edits. If anyone wants
-to contribute to this feel free to add.
-
-*/
-
-
-/* .main-nowPlayingBar-container {
-  border-radius: 15px !important;
-} */
-/* .Root__now-playing-bar {
-  position: fixed;
-  bottom: 5px;
-  left: 14%;
-  width: 70%;
-  background: none !important;
-} */
-
-/* .main-coverSlotExpanded-container {
-height: auto;
-position: fixed;
-bottom: 70px;
-left: 14.5%;
-width: 17.85%;
-} */
-
-/* .main-connectBar-connectBar {
-  display: none;
-} */
