@@ -77,7 +77,10 @@ const ConfigSelection = ({ name, defaultValue, options, onChange = () => {} }) =
 
     const setValueCallback = useCallback(
         (event) => {
-            const value = event.target.value;
+            let value = event.target.value;
+            if (!isNaN(Number(value))) {
+                value = parseInt(value);
+            }
             setValue(value);
             onChange(value);
         },
@@ -153,6 +156,106 @@ const ConfigInput = ({ name, defaultValue, onChange = () => {} }) => {
             react.createElement("input", {
                 value,
                 onChange: setValueCallback,
+            })
+        )
+    );
+};
+
+const ConfigAdjust = ({ name, defaultValue, step, min, max, onChange = () => {} }) => {
+    const [value, setValue] = useState(defaultValue);
+
+    function adjust(dir) {
+        let temp = value + dir * step;
+        if (temp < min) {
+            temp = min;
+        } else if (temp > max) {
+            temp = max;
+        }
+        setValue(temp);
+        onChange(temp);
+    }
+    return react.createElement(
+        "div",
+        {
+            className: "setting-row",
+        },
+        react.createElement(
+            "label",
+            {
+                className: "col description",
+            },
+            name
+        ),
+        react.createElement(
+            "div",
+            {
+                className: "col action",
+            },
+            react.createElement(SwapButton, {
+                icon: `<path d="M2 7h12v2H0z"/>`,
+                onClick: () => adjust(-1),
+                disabled: value === min,
+            }),
+            react.createElement(
+                "p",
+                {
+                    className: "adjust-value",
+                },
+                value
+            ),
+            react.createElement(SwapButton, {
+                icon: Spicetify.SVGIcons.plus2px,
+                onClick: () => adjust(1),
+                disabled: value === max,
+            })
+        )
+    );
+};
+
+const ConfigHotkey = ({ name, defaultValue, onChange = () => {} }) => {
+    const [value, setValue] = useState(defaultValue);
+    const [trap] = useState(new Spicetify.Mousetrap());
+
+    function record() {
+        trap.handleKey = (character, modifiers, e) => {
+            if (e.type == "keydown") {
+                const sequence = [...new Set([...modifiers, character])];
+                if (sequence.length === 1 && sequence[0] === "esc") {
+                    onChange("");
+                    setValue("");
+                    return;
+                }
+                setValue(sequence.join("+"));
+            }
+        };
+    }
+
+    function finishRecord() {
+        trap.handleKey = () => {};
+        onChange(value);
+    }
+
+    return react.createElement(
+        "div",
+        {
+            className: "setting-row",
+        },
+        react.createElement(
+            "label",
+            {
+                className: "col description",
+            },
+            name
+        ),
+        react.createElement(
+            "div",
+            {
+                className: "col action",
+            },
+            react.createElement("input", {
+                value,
+                onFocus: record,
+                onBlur: finishRecord,
             })
         )
     );
@@ -261,18 +364,31 @@ const ServiceList = ({ itemsList, onListChange = () => {}, onToggle = () => {}, 
 const OptionList = ({ items, onChange }) => {
     const [_, setItems] = useState(items);
     return items.map((item) => {
-        if (!item.when()) {
+        if (!item || (item.when && !item.when())) {
             return;
         }
-        return react.createElement(item.type, {
-            name: item.desc,
-            defaultValue: item.defaultValue,
-            options: item.options,
-            onChange: (value) => {
-                onChange(item.key, value);
-                setItems([...items]);
-            },
-        });
+
+        const onChangeItem = item.onChange || onChange;
+
+        return react.createElement(
+            "div",
+            null,
+            react.createElement(item.type, {
+                ...item,
+                name: item.desc,
+                defaultValue: CONFIG.visual[item.key],
+                onChange: (value) => {
+                    onChangeItem(item.key, value);
+                    setItems([...items]);
+                },
+            }),
+            item.info &&
+                react.createElement("span", {
+                    dangerouslySetInnerHTML: {
+                        __html: item.info,
+                    },
+                })
+        );
     });
 };
 
@@ -286,56 +402,77 @@ function openConfig() {
         react.createElement(OptionList, {
             items: [
                 {
+                    desc: "Font size",
+                    info: "(or Ctrl + Mouse scroll in main app)",
+                    key: "font-size",
+                    type: ConfigAdjust,
+                    min: fontSizeLimit.min,
+                    max: fontSizeLimit.max,
+                    step: fontSizeLimit.step,
+                },
+                {
                     desc: "Alignment",
                     key: "alignment",
-                    defaultValue: CONFIG.visual.alignment,
                     type: ConfigSelection,
                     options: {
                         left: "Left",
                         center: "Center",
                         right: "Right",
                     },
-                    when: () => true,
+                },
+                {
+                    desc: "Fullscreen hotkey",
+                    key: "fullscreen-key",
+                    type: ConfigHotkey,
+                },
+                {
+                    desc: "Compact synced: Lines to show before",
+                    key: "lines-before",
+                    type: ConfigSelection,
+                    options: [0, 1, 2, 3, 4],
+                },
+                {
+                    desc: "Compact synced: Lines to show after",
+                    key: "lines-after",
+                    type: ConfigSelection,
+                    options: [0, 1, 2, 3, 4],
+                },
+                {
+                    desc: "Compact synced: Fade-out blur",
+                    key: "fade-blur",
+                    type: ConfigSlider,
                 },
                 {
                     desc: "Noise overlay",
                     key: "noise",
-                    defaultValue: CONFIG.visual["noise"],
                     type: ConfigSlider,
-                    when: () => true,
                 },
                 {
                     desc: "Colorful background",
                     key: "colorful",
-                    defaultValue: CONFIG.visual["colorful"],
                     type: ConfigSlider,
-                    when: () => true,
                 },
                 {
                     desc: "Background color",
                     key: "background-color",
-                    defaultValue: CONFIG.visual["background-color"],
                     type: ConfigInput,
                     when: () => !CONFIG.visual["colorful"],
                 },
                 {
                     desc: "Active text color",
                     key: "active-color",
-                    defaultValue: CONFIG.visual["active-color"],
                     type: ConfigInput,
                     when: () => !CONFIG.visual["colorful"],
                 },
                 {
                     desc: "Inactive text color",
                     key: "inactive-color",
-                    defaultValue: CONFIG.visual["inactive-color"],
                     type: ConfigInput,
                     when: () => !CONFIG.visual["colorful"],
                 },
                 {
                     desc: "Highlight text background",
                     key: "highlight-color",
-                    defaultValue: CONFIG.visual["highlight-color"],
                     type: ConfigInput,
                     when: () => !CONFIG.visual["colorful"],
                 },
@@ -369,5 +506,6 @@ function openConfig() {
     Spicetify.PopupModal.display({
         title: "Lyrics Plus",
         content: configContainer,
+        isLarge: true,
     });
 }

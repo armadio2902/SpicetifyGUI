@@ -84,6 +84,16 @@
     // Forward Slash to open search page
     registerBind("/", false, false, false, openSearchPage);
 
+    if (window.navigator.userAgent.indexOf("Win") === -1) {
+        // CTRL + Arrow Left Next and CTRL + Arrow Right  Previous Song
+        registerBind("ARROW_RIGHT", true, false, false, nextSong);
+        registerBind("ARROW_LEFT", true, false, false, previousSong);
+
+        // CTRL + Arrow Up Increase Volume CTRL + Arrow Down Decrease Volume
+        registerBind("ARROW_UP", true, false, false, increaseVolume);
+        registerBind("ARROW_DOWN", true, false, false, decreaseVolume);
+    }
+
     // F to activate Link Follow function
     const vim = new VimBind();
     registerBind("F", false, false, false, vim.activate.bind(vim));
@@ -99,7 +109,7 @@
     }
 
     function clickQueueButton() {
-        document.querySelector(".control-button-wrapper .spoticon-queue-16").click();
+        document.querySelector("div.ExtraControls div.control-button-wrapper > button").click();
     }
 
     function clickNavigatingBackButton() {
@@ -134,12 +144,28 @@
         app.scroll(0, 0);
     }
 
+    function nextSong() {
+        document.querySelector(".main-skipForwardButton-button").click();
+    }
+
+    function previousSong() {
+        document.querySelector(".main-skipBackButton-button").click();
+    }
+
+    function increaseVolume() {
+        Spicetify.Player.origin.setVolume(Spicetify.Player.getVolume() + 0.1);
+    }
+
+    function decreaseVolume() {
+        Spicetify.Player.origin.setVolume(Spicetify.Player.getVolume() - 0.1);
+    }
+
     /**
      *
      * @param {KeyboardEvent} event
      */
     function openSearchPage(event) {
-        const searchInput = document.querySelector(".main-topBar-topbarContentWrapper input");
+        const searchInput = document.querySelector(".main-topBar-container input");
         if (searchInput) {
             searchInput.focus();
         } else {
@@ -179,7 +205,7 @@
     }
 
     function focusOnApp() {
-        return document.querySelector("main .os-viewport");
+        return document.querySelector(".Root__main-view .os-viewport");
     }
 
     /**

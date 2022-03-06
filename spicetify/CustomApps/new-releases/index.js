@@ -1,4 +1,4 @@
-// Run "npm i @type/react" to have this type package available in workspace
+// Run "npm i @types/react" to have this type package available in workspace
 /// <reference types="react" />
 
 /** @type {React} */
@@ -61,6 +61,8 @@ let separatedByDate = {};
 let dateList = [];
 
 class Grid extends react.Component {
+    viewportSelector = "#main .os-viewport";
+
     constructor() {
         super();
         this.state = {
@@ -171,7 +173,7 @@ class Grid extends react.Component {
         this.configButton = new Spicetify.Menu.Item("New Releases config", false, openConfig);
         this.configButton.register();
 
-        const viewPort = document.querySelector("main .os-viewport");
+        const viewPort = document.querySelector(this.viewportSelector);
 
         if (gridList.length) {
             // Already loaded
@@ -185,7 +187,7 @@ class Grid extends react.Component {
     }
 
     componentWillUnmount() {
-        const viewPort = document.querySelector("main .os-viewport");
+        const viewPort = document.querySelector(this.viewportSelector);
         lastScroll = viewPort.scrollTop;
         this.configButton.deregister();
     }
@@ -255,7 +257,7 @@ async function getPodcastList() {
 }
 
 async function getPodcastRelease(uri) {
-    const body = await CosmosAsync.get(`sp://core-show/unstable/show/${uri}?responseFormat=protobufJson`, {
+    const body = await CosmosAsync.get(`sp://core-show/v1/shows/${uri}?responseFormat=protobufJson`, {
         policy: { list: { link: true, name: true, publishDate: true } },
     });
     return body.items;

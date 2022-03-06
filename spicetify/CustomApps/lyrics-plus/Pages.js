@@ -1,5 +1,5 @@
 const CreditFooter = react.memo(({ provider, copyright }) => {
-    const credit = [Spicetify.Locale.get("lyrics.providedBy", provider)];
+    const credit = [Spicetify.Locale.get("web-player.lyrics.providedBy", provider)];
     if (copyright) {
         credit.push(...copyright.split("\n"));
     }
@@ -19,14 +19,29 @@ const CreditFooter = react.memo(({ provider, copyright }) => {
     );
 });
 
-const emptyLine = {
-    startTime: 0,
-    text: "",
+const IdlingIndicator = ({ isActive, progress, delay }) => {
+    return react.createElement(
+        "div",
+        {
+            className: `lyrics-idling-indicator ${
+                !isActive ? "lyrics-idling-indicator-hidden" : ""
+            } lyrics-lyricsContainer-LyricsLine lyrics-lyricsContainer-LyricsLine-active`,
+            style: {
+                "--position-index": 0,
+                "--animation-index": 1,
+                "--indicator-delay": delay + "ms",
+            },
+        },
+        react.createElement("div", { className: `lyrics-idling-indicator__circle ${progress >= 0.05 ? "active" : ""}` }),
+        react.createElement("div", { className: `lyrics-idling-indicator__circle ${progress >= 0.33 ? "active" : ""}` }),
+        react.createElement("div", { className: `lyrics-idling-indicator__circle ${progress >= 0.66 ? "active" : ""}` })
+    );
 };
 
-const LINES_TO_SHOW = 3;
-const lyricsLineCount = {
-    "--line-count": LINES_TO_SHOW,
+const emptyLine = {
+    startTime: 0,
+    endTime: 0,
+    text: [],
 };
 
 const useTrackPosition = (callback) => {
@@ -42,11 +57,36 @@ const useTrackPosition = (callback) => {
     }, [callbackRef]);
 };
 
-const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => {
+const KaraokeLine = ({ text, isActive, position, startTime }) => {
+    if (!isActive) {
+        return text.map(({ word }) => word).join("");
+    }
+
+    return text.map(({ word, time }) => {
+        const isWordActive = position >= startTime;
+        startTime += time;
+        return react.createElement(
+            "span",
+            {
+                className: "lyrics-lyricsContainer-Karaoke-Word" + (isWordActive ? " lyrics-lyricsContainer-Karaoke-WordActive" : ""),
+                style: {
+                    "--word-duration": time + "ms",
+                },
+            },
+            word
+        );
+    });
+};
+
+const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara }) => {
     const [position, setPosition] = useState(0);
+    const activeLineEle = useRef();
+    const lyricContainerEle = useRef();
+
     useTrackPosition(() => {
-        if (!Player.data.is_paused) {
-            setPosition(Spicetify.Player.getProgress());
+        const newPos = Spicetify.Player.getProgress();
+        if (newPos != position) {
+            setPosition(newPos + CONFIG.visual.delay);
         }
     });
 
@@ -59,6 +99,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => {
         [lyrics]
     );
 
+    const lyricsId = lyrics[0].text;
+
     let activeLineIndex = 0;
     for (let i = lyricWithEmptyLines.length - 1; i > 0; i--) {
         if (position >= lyricWithEmptyLines[i].startTime) {
@@ -68,121 +110,76 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => {
     }
 
     const activeLines = useMemo(() => {
-        const startIndex = Math.max(activeLineIndex - 1, 0);
-        return lyricWithEmptyLines.slice(startIndex, startIndex + LINES_TO_SHOW + 2);
+        const startIndex = Math.max(activeLineIndex - 1 - CONFIG.visual["lines-before"], 0);
+        // 3 lines = 1 padding top + 1 padding bottom + 1 active
+        const linesCount = CONFIG.visual["lines-before"] + CONFIG.visual["lines-after"] + 3;
+        return lyricWithEmptyLines.slice(startIndex, startIndex + linesCount);
     }, [activeLineIndex, lyricWithEmptyLines]);
 
-    return react.createElement(
-        "div",
-        {
-            className: "lyrics-lyricsContainer-SyncedLyricsPage",
-            style: lyricsLineCount,
-        },
-        react.createElement(
-            "div",
-            {
-                className: "lyrics-lyricsContainer-SyncedLyrics",
-            },
-            activeLines.map(({ text, lineNumber }, i) => {
-                return react.createElement(
-                    "p",
-                    {
-                        className: "lyrics-lyricsContainer-LyricsLine",
-                        style: {
-                            "--animation-index": i,
-                        },
-                        key: lineNumber,
-                        dir: "auto",
-                    },
-                    text
-                );
-            })
-        ),
-        react.createElement(CreditFooter, {
-            provider,
-            copyright,
-        })
-    );
-});
-
-const emptyLineKara = {
-    startTime: 0,
-    endTime: 0,
-    text: [],
-};
-
-const KaraokeLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => {
-    const [position, setPosition] = useState(0);
-    useTrackPosition(() => {
-        if (!Player.data.is_paused) {
-            setPosition(Spicetify.Player.getProgress());
-        }
-    });
-
-    const padded = useMemo(
-        () =>
-            [emptyLineKara, emptyLineKara, ...lyrics].map((line, i) => ({
-                ...line,
-                lineNumber: i,
-            })),
-        [lyrics]
-    );
-
-    let activeLineIndex = 0;
-
-    for (let i = padded.length - 1; i >= 0; i--) {
-        const line = padded[i];
-        if (position >= line.startTime) {
-            activeLineIndex = i;
-            break;
-        }
+    let offset = lyricContainerEle.current ? lyricContainerEle.current.clientHeight / 2 : 0;
+    if (activeLineEle.current) {
+        offset += -(activeLineEle.current.offsetTop + activeLineEle.current.clientHeight / 2);
     }
 
-    const activeLines = useMemo(() => {
-        const startIndex = Math.max(activeLineIndex - 1, 0);
-        return padded.slice(startIndex, startIndex + LINES_TO_SHOW + 2);
-    }, [activeLineIndex, padded]);
-
     return react.createElement(
         "div",
         {
             className: "lyrics-lyricsContainer-SyncedLyricsPage",
-            style: lyricsLineCount,
+            ref: lyricContainerEle,
         },
         react.createElement(
             "div",
             {
                 className: "lyrics-lyricsContainer-SyncedLyrics",
+                style: {
+                    "--offset": offset + "px",
+                },
+                key: lyricsId,
             },
             activeLines.map(({ text, lineNumber, startTime }, i) => {
-                let timeAcc = startTime;
+                if (i == 1 && activeLineIndex == 1) {
+                    return react.createElement(IdlingIndicator, {
+                        progress: position / activeLines[2].startTime,
+                        delay: activeLines[2].startTime / 3,
+                    });
+                }
+
+                let className = "lyrics-lyricsContainer-LyricsLine";
+                let activeElementIndex = Math.min(activeLineIndex, CONFIG.visual["lines-before"] + 1);
+                let ref;
+
+                const isActive = activeElementIndex === i;
+                if (isActive) {
+                    className += " lyrics-lyricsContainer-LyricsLine-active";
+                    ref = activeLineEle;
+                }
+
+                let animationIndex;
+                if (activeLineIndex <= CONFIG.visual["lines-before"]) {
+                    animationIndex = i - activeLineIndex;
+                } else {
+                    animationIndex = i - CONFIG.visual["lines-before"] - 1;
+                }
+
                 return react.createElement(
                     "p",
                     {
-                        className: "lyrics-lyricsContainer-LyricsLine",
+                        className,
                         style: {
-                            "--animation-index": i,
+                            "--position-index": animationIndex,
+                            "--animation-index": (animationIndex < 0 ? 0 : animationIndex) + 1,
+                            "--blur-index": Math.abs(animationIndex),
                         },
                         key: lineNumber,
                         dir: "auto",
+                        ref,
+                        onDoubleClick: (event) => {
+                            if (startTime) {
+                                Spicetify.Player.seek(startTime);
+                            }
+                        },
                     },
-                    i == 1
-                        ? text.map(({ word, time }) => {
-                              const isWordActive = position >= timeAcc;
-                              timeAcc += time;
-                              return react.createElement(
-                                  "span",
-                                  {
-                                      className:
-                                          "lyrics-lyricsContainer-Karaoke-Word" + (isWordActive ? " lyrics-lyricsContainer-Karaoke-WordActive" : ""),
-                                      style: {
-                                          "--word-duration": time + "ms",
-                                      },
-                                  },
-                                  word
-                              );
-                          })
-                        : text.map(({ word }) => word).join(" ")
+                    !isKara ? text : react.createElement(KaraokeLine, { text, startTime, position, isActive })
                 );
             })
         ),
@@ -328,6 +325,99 @@ class SearchBar extends react.Component {
     }
 }
 
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
+const SyncedExpandedLyricsPage = react.memo(({ lyrics, provider, copyright, isKara }) => {
+    const [position, setPosition] = useState(0);
+    const activeLineRef = useRef(null);
+    const pageRef = useRef(null);
+
+    useTrackPosition(() => {
+        if (!Player.data.is_paused) {
+            setPosition(Spicetify.Player.getProgress() + CONFIG.visual.delay);
+        }
+    });
+
+    const padded = useMemo(() => [emptyLine, ...lyrics], [lyrics]);
+
+    const intialScroll = useMemo(() => [false], [lyrics]);
+
+    const lyricsId = lyrics[0].text;
+
+    let activeLineIndex = 0;
+    for (let i = padded.length - 1; i >= 0; i--) {
+        const line = padded[i];
+        if (position >= line.startTime) {
+            activeLineIndex = i;
+            break;
+        }
+    }
+
+    useEffect(() => {
+        if (activeLineRef.current && (!intialScroll[0] || isInViewport(activeLineRef.current))) {
+            activeLineRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "nearest",
+            });
+            intialScroll[0] = true;
+        }
+    }, [activeLineRef.current]);
+
+    return react.createElement(
+        "div",
+        {
+            className: "lyrics-lyricsContainer-UnsyncedLyricsPage",
+            key: lyricsId,
+            ref: pageRef,
+        },
+        react.createElement("p", {
+            className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
+        }),
+        padded.map(({ text, startTime }, i) => {
+            if (i == 0) {
+                return react.createElement(IdlingIndicator, {
+                    isActive: activeLineIndex == 0,
+                    progress: position / padded[1].startTime,
+                    delay: padded[1].startTime / 3,
+                });
+            }
+
+            const isActive = i == activeLineIndex;
+            return react.createElement(
+                "p",
+                {
+                    className: "lyrics-lyricsContainer-LyricsLine" + (i <= activeLineIndex ? " lyrics-lyricsContainer-LyricsLine-active" : ""),
+                    dir: "auto",
+                    ref: isActive ? activeLineRef : null,
+                    onDoubleClick: (event) => {
+                        if (startTime) {
+                            Spicetify.Player.seek(startTime);
+                        }
+                    },
+                },
+                !isKara ? text : react.createElement(KaraokeLine, { text, startTime, position, isActive })
+            );
+        }),
+        react.createElement("p", {
+            className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
+        }),
+        react.createElement(CreditFooter, {
+            provider,
+            copyright,
+        }),
+        react.createElement(SearchBar, null)
+    );
+});
+
 const UnsyncedLyricsPage = react.memo(({ lyrics, provider, copyright }) => {
     return react.createElement(
         "div",
@@ -335,23 +425,21 @@ const UnsyncedLyricsPage = react.memo(({ lyrics, provider, copyright }) => {
             className: "lyrics-lyricsContainer-UnsyncedLyricsPage",
         },
         react.createElement("p", {
-            variant: "main-type-ballad",
-            className: "lyrics-lyricsContainer-LyricsUnsyncedMessage",
+            className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
         }),
-        react.createElement(
-            "div",
-            null,
-            lyrics.map(({ text, desc }) => {
-                return react.createElement(
-                    "p",
-                    {
-                        className: "lyrics-lyricsContainer-LyricsLine",
-                        dir: "auto",
-                    },
-                    text
-                );
-            })
-        ),
+        lyrics.map(({ text }) => {
+            return react.createElement(
+                "p",
+                {
+                    className: "lyrics-lyricsContainer-LyricsLine lyrics-lyricsContainer-LyricsLine-active",
+                    dir: "auto",
+                },
+                text
+            );
+        }),
+        react.createElement("p", {
+            className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
+        }),
         react.createElement(CreditFooter, {
             provider,
             copyright,
@@ -396,66 +484,90 @@ function showNote(parent, note) {
     }
 }
 
-const GeniusPage = react.memo(({ lyrics, provider, copyright, versions, versionIndex, onVersionChange }) => {
-    let notes = {};
-    let container = null;
+const GeniusPage = react.memo(
+    ({ lyrics, provider, copyright, versions, versionIndex, onVersionChange, isSplitted, lyrics2, versionIndex2, onVersionChange2 }) => {
+        let notes = {};
+        let container = null;
+        let container2 = null;
 
-    // Fetch notes
-    useEffect(() => {
-        if (!container) return;
-        notes = {};
-        const links = container.querySelectorAll("a");
-        for (const link of links) {
-            let id = link.pathname.match(/\/(\d+)\//);
-            if (!id) {
-                id = link.dataset.id;
-            } else {
-                id = id[1];
+        // Fetch notes
+        useEffect(() => {
+            if (!container) return;
+            notes = {};
+            let links = container.querySelectorAll("a");
+            if (isSplitted && container2) {
+                links = [...links, ...container2.querySelectorAll("a")];
             }
-            ProviderGenius.getNote(id).then((note) => {
-                notes[id] = note;
-                link.classList.add("fetched");
-            });
-            link.onclick = (event) => {
-                event.preventDefault();
-                if (!notes[id]) return;
-                showNote(link, notes[id]);
-            };
-        }
-    }, [lyrics]);
+            for (const link of links) {
+                let id = link.pathname.match(/\/(\d+)\//);
+                if (!id) {
+                    id = link.dataset.id;
+                } else {
+                    id = id[1];
+                }
+                ProviderGenius.getNote(id).then((note) => {
+                    notes[id] = note;
+                    link.classList.add("fetched");
+                });
+                link.onclick = (event) => {
+                    event.preventDefault();
+                    if (!notes[id]) return;
+                    showNote(link, notes[id]);
+                };
+            }
+        }, [lyrics, lyrics2]);
 
-    return react.createElement(
-        "div",
-        {
-            className: "lyrics-lyricsContainer-UnsyncedLyricsPage",
-        },
-        react.createElement(
-            "p",
-            {
-                variant: "main-type-ballad",
-                className: "lyrics-lyricsContainer-LyricsUnsyncedMessage",
-            },
-            versions?.length > 1 &&
-                react.createElement(VersionSelector, {
-                    items: versions,
-                    index: versionIndex,
-                    callback: onVersionChange,
+        const lyricsEl1 = react.createElement(
+            "div",
+            null,
+            react.createElement(VersionSelector, { items: versions, index: versionIndex, callback: onVersionChange }),
+            react.createElement("div", {
+                className: "lyrics-lyricsContainer-LyricsLine lyrics-lyricsContainer-LyricsLine-active",
+                ref: (c) => (container = c),
+                dangerouslySetInnerHTML: {
+                    __html: lyrics,
+                },
+            })
+        );
+
+        let mainContainer = [lyricsEl1];
+        //remove "&& false" below to restore the split display
+        const shouldSplit = versions.length > 1 && isSplitted && false;
+
+        if (shouldSplit) {
+            const lyricsEl2 = react.createElement(
+                "div",
+                null,
+                react.createElement(VersionSelector, { items: versions, index: versionIndex2, callback: onVersionChange2 }),
+                react.createElement("div", {
+                    className: "lyrics-lyricsContainer-LyricsLine lyrics-lyricsContainer-LyricsLine-active",
+                    ref: (c) => (container2 = c),
+                    dangerouslySetInnerHTML: {
+                        __html: lyrics2,
+                    },
                 })
-        ),
-        react.createElement("div", {
-            className: "lyrics-lyricsContainer-LyricsLine",
-            ref: (c) => (container = c),
-            dangerouslySetInnerHTML: {
-                __html: lyrics,
+            );
+            mainContainer.push(lyricsEl2);
+        }
+
+        return react.createElement(
+            "div",
+            {
+                className: "lyrics-lyricsContainer-UnsyncedLyricsPage",
             },
-        }),
-        react.createElement(CreditFooter, {
-            provider,
-            copyright,
-        }),
-        react.createElement(SearchBar, null)
-    );
-});
+            react.createElement("p", {
+                variant: "main-type-ballad",
+                className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
+            }),
+            react.createElement("div", { className: shouldSplit ? "split" : "" }, mainContainer),
+            react.createElement(CreditFooter, {
+                provider,
+                copyright,
+            }),
+            react.createElement(SearchBar, null)
+        );
+    }
+);
 
 const LoadingIcon = react.createElement(
     "svg",
@@ -530,6 +642,9 @@ const LoadingIcon = react.createElement(
 );
 
 const VersionSelector = react.memo(({ items, index, callback }) => {
+    if (items.length < 2) {
+        return null;
+    }
     return react.createElement(
         "div",
         {

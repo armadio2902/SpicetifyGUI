@@ -93,19 +93,19 @@ const ProviderGenius = (function () {
             return lyrics;
         }
 
-        lyricsSections = body.match(/<div data-scrolltrigger-pin="true" class="Lyrics__Container.+?>.+?<\/div>/gs);
+        lyricsSections = body.match(/<div ([\w-]+=[\w"]+ )+class="Lyrics__Container.+?>.+?<\/div>/gs);
         if (lyricsSections) {
             lyrics = "";
             for (const section of lyricsSections) {
-                const fragment = section.match(/<div data-scrolltrigger-pin="true" class="Lyrics__Container.+?>(.+?)<\/div>/s);
+                const fragment = section.match(/<div ([\w-]+=[\w"]+ )+class="Lyrics__Container.+?>(.+?)<\/div>/s);
                 if (fragment) {
-                    lyrics += fragment[1];
+                    lyrics += fragment[2];
                 }
             }
             return lyrics;
         }
 
-        if (!lyrics.length) {
+        if (!lyrics?.length) {
             console.warn("forceError");
             return null;
         }
@@ -124,7 +124,7 @@ const ProviderGenius = (function () {
 
         let lyrics, hits;
         for (const title of titles) {
-            const url = `https://genius.com/api/search/song?per_page=10&q=${encodeURIComponent(info.artist)}%20${encodeURIComponent(title)}`;
+            const url = `https://genius.com/api/search/song?per_page=20&q=${encodeURIComponent(title)}%20${encodeURIComponent(info.artist)}`;
 
             const geniusSearch = await CosmosAsync.get(url);
 

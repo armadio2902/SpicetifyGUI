@@ -65,12 +65,12 @@ const Providers = {
         const synced = ProviderMusixmatch.getSynced(list);
         if (synced) {
             result.synced = synced;
-            result.copyright = list["track.subtitles.get"].message.body.subtitle_list[0].subtitle.lyrics_copyright.trim();
+            result.copyright = list["track.subtitles.get"].message?.body?.subtitle_list?.[0]?.subtitle.lyrics_copyright.trim();
         }
         const unsynced = synced || ProviderMusixmatch.getUnsynced(list);
         if (unsynced) {
             result.unsynced = unsynced;
-            result.copyright = list["track.lyrics.get"].message.body.lyrics.lyrics_copyright.trim();
+            result.copyright = list["track.lyrics.get"].message?.body?.lyrics?.lyrics_copyright?.trim();
         }
 
         return result;
@@ -112,6 +112,13 @@ const Providers = {
     genius: async (info) => {
         const { lyrics, versions } = await ProviderGenius.fetchLyrics(info);
 
+        let versionIndex2 = 0;
+        let genius2 = lyrics;
+        if (CONFIG.visual["dual-genius"] && versions.length > 1) {
+            genius2 = await ProviderGenius.fetchLyricsVersion(versions, 1);
+            versionIndex2 = 1;
+        }
+
         return {
             uri: info.uri,
             genius: lyrics,
@@ -123,6 +130,8 @@ const Providers = {
             error: null,
             versions,
             versionIndex: 0,
+            genius2,
+            versionIndex2,
         };
     },
 };

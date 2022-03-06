@@ -7,7 +7,7 @@
 /// <reference path="../globals.d.ts" />
 
 (function ShufflePlus() {
-    if (!Spicetify.CosmosAsync || !Spicetify.Player.origin || !Spicetify.Platform) {
+    if (!Spicetify.CosmosAsync || !Spicetify.Platform) {
         setTimeout(ShufflePlus, 1000);
         return;
     }
@@ -18,7 +18,6 @@
         menuItem.isEnabled = playDiscography;
     });
 
-    let playUriOGFunc = Spicetify.Player.origin.play.bind(Spicetify.Player.origin);
     let playerPlayOGFunc = Spicetify.Platform.PlayerAPI.play.bind(Spicetify.Platform.PlayerAPI);
     let isInjected = localStorage.getItem("shuffleplus:on") === "true";
     injectFunctions(isInjected);
@@ -34,13 +33,6 @@
 
     function injectFunctions(bool) {
         if (bool) {
-            Spicetify.Player.origin.play = (uri, context, options) => {
-                if (options?.trackUid) {
-                    playUriOGFunc(uri, context, options);
-                    return;
-                }
-                fetchAndPlay(uri);
-            };
             Spicetify.Platform.PlayerAPI.play = (uri, origins, options) => {
                 if (options?.skipTo) {
                     if (options.skipTo.index !== undefined) {
@@ -56,7 +48,6 @@
             };
         } else {
             // Revert
-            Spicetify.Player.origin.play = playUriOGFunc;
             Spicetify.Platform.PlayerAPI.play = playerPlayOGFunc;
         }
     }
@@ -125,6 +116,10 @@
             case Spicetify.URI.Type.TRACK:
             case Spicetify.URI.Type.EPISODE:
                 return [uri];
+            case Spicetify.URI.Type.STATION:
+            case Spicetify.URI.Type.RADIO:
+                playerPlayOGFunc({ uri: uri }, { featureVersion: Spicetify.Platform.PlayerAPI._defaultFeatureVersion });
+                return ["playedstation"];
         }
         throw `Unsupported fetching URI type: ${uriObj.type}`;
     }
@@ -149,7 +144,7 @@
      */
     const searchFolder = (rows, uri) => {
         for (const r of rows) {
-            if (r.type !== "folder") {
+            if (r.type !== "folder" || r.rows == null) {
                 continue;
             }
 
@@ -189,15 +184,7 @@
 
         fetchNested(requestFolder);
 
-        return await Promise.all(requestPlaylists).then((playlists) => {
-            const trackList = [];
-
-            playlists.forEach((p) => {
-                trackList.push(...p);
-            });
-
-            return trackList;
-        });
+        return (await Promise.all(requestPlaylists)).flat();
     };
 
     /**
@@ -233,7 +220,7 @@
      * @returns {Promise<string[]>}
      */
     const fetchShow = async (uriBase62) => {
-        const res = await Spicetify.CosmosAsync.get(`sp://core-show/unstable/show/${uriBase62}?responseFormat=protobufJson`);
+        const res = await Spicetify.CosmosAsync.get(`sp://core-show/v1/shows/${uriBase62}?responseFormat=protobufJson`);
         const availables = res.items.filter((track) => track.episodePlayState.isPlayable);
         return availables.map((item) => item.episodeMetadata.link);
     };
@@ -311,16 +298,34 @@
      * @param {string[]} list
      */
     async function playList(list, context) {
+        if (list[0] === "playedstation") {
+            return;
+        }
         const count = list.length;
         if (count === 0) {
             throw "There is no available track to play";
         } else if (count === 1) {
-            playUriOGFunc(list[0]);
+            playerPlayOGFunc({ uri: list[0] }, { featureVersion: Spicetify.Platform.PlayerAPI._defaultFeatureVersion });
             return;
         }
         list.push("spotify:delimiter");
 
-        const isQueue = !context || Spicetify.URI.isCollection(context);
+        Spicetify.Platform.PlayerAPI.clearQueue();
+
+        const isQueue = !context;
+
+        await Spicetify.CosmosAsync.put("sp://player/v2/main/queue", {
+            queue_revision: Spicetify.Queue?.queueRevision,
+            next_tracks: list.map((uri) => ({
+                uri,
+                provider: isQueue ? "queue" : "context",
+                metadata: {
+                    is_queued: isQueue,
+                },
+            })),
+            prev_tracks: Spicetify.Queue?.prevTracks,
+        });
+
         if (!isQueue) {
             await Spicetify.CosmosAsync.post("sp://player/v2/main/update", {
                 context: {
@@ -329,17 +334,7 @@
                 },
             });
         }
-        await Spicetify.CosmosAsync.put("sp://player/v2/main/queue", {
-            queue_revision: Spicetify.Queue?.revision,
-            next_tracks: list.map((uri) => ({
-                uri,
-                provider: context ? "context" : "queue",
-                metadata: {
-                    is_queued: isQueue,
-                },
-            })),
-            prev_tracks: Spicetify.Queue?.prev_tracks,
-        });
+
         success(count);
         Spicetify.Player.next();
     }
